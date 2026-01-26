@@ -5,6 +5,6 @@
 
 
 
-## Code pour changer une allumer une led
+## Code pour allumer une led
 
 ## [Retour à la racine](https://my.flowershow.app/@corentinrordorf/python-markdown-theme-global)
