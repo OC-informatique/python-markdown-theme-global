@@ -1,5 +1,7 @@
 # Ceci est un petit manuel python
-abc
+> [!info] This is cool!
+> Here's a callout block.
+> It supports **markdown** 
 ## Les dictionnaires en python
 
 ## Les chaînes de caractère en python
