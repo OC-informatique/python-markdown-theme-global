@@ -5,8 +5,8 @@ graph LR
   A[Problem] --> B{Work}
   B -->|Yes| C[Success]
   B -->|No| D[Failure]
-  C --> E[6]
-  D --> E[2]
+  C --> E[University]
+  D --> G[Mc Donald]
 ```
 
 - [Manuel Python](https://my.flowershow.app/@corentinrordorf/python-markdown-theme-global/Markdown-Python)
