@@ -35,8 +35,33 @@ En Python, la boucle `for` permet de parcourir **une séquence d’éléments** 
 
 ![Example](./images/05-09-47-978_512.webp)
 ## Parcourir un nombre en python et sélectionner ses chiffres les uns après les autres
+**-Parcourir un nombre en Python et sélectionner ses chiffres:**
+En Python, un **nombre entier (`int`) n’est pas itérable directement**.  
+Pour accéder à ses chiffres un par un il faut faire une conversion en chaîne de caractères.
+Principe:
+On transforme le nombre en **chaîne (`str`)**, puis on parcourt chaque caractère.
+
+Exemple:
+```python
+nombre = 12345
+
+for chiffre in str(nombre):
+    print(chiffre)
+
+Résultat:
+Copier le code
+1
+2
+3
+4
+5
+Chaque chiffre est de type str.
+Pour le convertir en entier :
+Copier le code
+chiffre = int(chiffre)
 
 ## Convertie un nombre en binaire et ôter les 2 premiers caractères de la chaîne
+
 
 
 ## [Retour à la racine](https://my.flowershow.app/@corentinrordorf/python-markdown-theme-global)
