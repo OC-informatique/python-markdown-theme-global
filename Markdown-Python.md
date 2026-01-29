@@ -20,6 +20,6 @@ HAKUNA MATATA!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ## Parcourir un nombre en python et sélectionner ses chiffres les uns après les autres
 
 ## Convertie un nombre en binaire et ôter les 2 premiers caractères de la chaîne
-
+quoicoubeh
 
 ## [Retour à la racine](https://my.flowershow.app/@corentinrordorf/python-markdown-theme-global)
