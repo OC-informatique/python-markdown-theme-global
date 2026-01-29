@@ -1,7 +1,7 @@
 # Site de tutorials pour la classe d'OC 25-27
 
 ```mermaid
-flowchart LR
+graph LR
     A[Problem] --> B{Work}
     B -->|Yes| C[Success]
     B -->|No| D[Failure]
