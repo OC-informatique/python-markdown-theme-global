@@ -30,7 +30,7 @@ En Python, une liste est une structure de données qui permet de stocker **plusi
 En Python, la boucle `while` permet de répéter un bloc d’instructions **tant qu’une condition est vraie**. Avant chaque itération, Python évalue la condition : si elle est vraie (`True`), le code à l’intérieur de la boucle s’exécute ; si elle devient fausse (`False`), la boucle s’arrête. Il est donc essentiel que la  boucle s’arrête. Il est donc essentiel que la condition évolue au cours du temps, sinon on risque de créer une **boucle infinie**. La boucle `while` est souvent utilisée lorsqu’on ne connaît pas à l’avance le nombre de répétitions nécessaires. On peut aussi contrôler son déroulement avec les mots-clés `break` (pour arrêter la boucle) et `continue` (pour passer directement à l’itération suivante).
 
 ## La boucle for en python
-
+ça boucle
 ## Parcourir un nombre en python et sélectionner ses chiffres les uns après les autres
 
 ## Convertie un nombre en binaire et ôter les 2 premiers caractères de la chaîne
