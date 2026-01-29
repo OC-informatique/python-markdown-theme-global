@@ -33,6 +33,7 @@ En Python, la boucle `while` permet de répéter un bloc d’instructions **tant
 
 En Python, la boucle `for` permet de parcourir **une séquence d’éléments** (comme une liste, une chaîne de caractères ou un intervalle de nombres) et d’exécuter un bloc de code pour chacun d’eux. À chaque itération, une variable prend successivement la valeur de l’élément courant de la séquence. La boucle `for` est particulièrement utile lorsque le nombre d’itérations est connu à l’avance. On l’utilise souvent avec la fonction `range()` pour répéter une action un certain nombre de fois. Comme avec les autres boucles, on peut contrôler son comportement à l’aide de `break` pour l’interrompre et `continue` pour passer à l’itération suivante.
 
+![Example](./images/05-09-47-978_512.webp)
 ## Parcourir un nombre en python et sélectionner ses chiffres les uns après les autres
 
 ## Convertie un nombre en binaire et ôter les 2 premiers caractères de la chaîne
