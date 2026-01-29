@@ -25,6 +25,8 @@ merci.......
 
 ## La boucle while en python
 
+En Python, la boucle `while` permet de répéter un bloc d’instructions **tant qu’une condition est vraie**. Avant chaque itération, Python évalue la condition : si elle est vraie (`True`), le code à l’intérieur de la boucle s’exécute ; si elle devient fausse (`False`), la boucle s’arrête. Il est donc essentiel que la
+
 ## La boucle for en python
 
 ## Parcourir un nombre en python et sélectionner ses chiffres les uns après les autres
