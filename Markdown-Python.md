@@ -3,9 +3,11 @@
 > [!info] This is cool!
 > Here's a callout block.
 > It supports **markdown**
-> 
+>
+
 ## Les dictionnaires en python
 
+J'écris du *text*.  
 
 ## Les chaînes de caractère en python
 
