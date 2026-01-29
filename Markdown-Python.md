@@ -59,7 +59,7 @@ Chaque chiffre est de type str.
 Pour le convertir en entier :
 Copier le code
 chiffre = int(chiffre)
-´´´
+```
 
 ## Convertir un nombre en binaire et ôter les 2 premiers caractères de la chaîne
 
