@@ -5,7 +5,7 @@
 > It supports **markdown**
 > 
 ## Les dictionnaires en python
-nbiubiubiub
+
 
 ## Les chaînes de caractère en python
 
