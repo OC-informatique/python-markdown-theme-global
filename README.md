@@ -1,5 +1,4 @@
 ---
-title: My Page
 syntaxMode: mdx
 ---
 
