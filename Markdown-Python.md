@@ -1,9 +1,10 @@
 # Ceci est un petit manuel python
 
-> [!info] This is cool!
-> Here's a callout block.
-> It supports **markdown**
->
+:::info
+**This is cool!**  
+Here's a callout block.  
+It supports **markdown**
+:::
 
 ## Les dictionnaires en python
 
