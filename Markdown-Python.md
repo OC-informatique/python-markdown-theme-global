@@ -60,8 +60,22 @@ Pour le convertir en entier :
 Copier le code
 chiffre = int(chiffre)
 
-## Convertie un nombre en binaire et ôter les 2 premiers caractères de la chaîne
+## Convertir un nombre en binaire et ôter les 2 premiers caractères de la chaîne
 
+En Python, il est possible de convertir un nombre décimal en **binaire** grâce à une fonction intégrée, puis de **manipuler la chaîne obtenue**.
 
+Étape 1 : Convertir un nombre en binaire
+Python fournit la fonction `bin()`.
+
+Exemple:
+```python
+nombre = 13
+binaire = bin(nombre)
+print(binaire)
+
+Résultat:
+Copier le code
+0b1101
+**Le préfixe 0b indique que le nombre est écrit en binaire.**
 
 ## [Retour à la racine](https://my.flowershow.app/@corentinrordorf/python-markdown-theme-global)
