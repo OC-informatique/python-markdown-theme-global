@@ -62,20 +62,19 @@ chiffre = int(chiffre)
 
 ## Convertir un nombre en binaire et ôter les 2 premiers caractères de la chaîne
 
-En Python, il est possible de convertir un nombre décimal en **binaire** grâce à une fonction intégrée, puis de **manipuler la chaîne obtenue**.
+On utilise la fonction `bin()` de math et rajoute un argument `[2:]` afin de se débarasser des deux premiers caractères qu'il renvoie. Ainsi, on peut écrire par exemple: `a=bin(12)[2:]` où `a` sera égale à l'écriture binaire de 12 sans l'argument 0b qui le précède abituellement lorsque on utilise la fonction `bin()`.
+Le programe final qui fait ceci, défini en fonction serait donc:
+`from math import *
 
-Étape 1 : Convertir un nombre en binaire
-Python fournit la fonction `bin()`.
+def transformationEnBinaire(nombre):
+    #on défini a (appelez le comme vous voulez)
+    a = 0
+    #on donne la valeur de a
+    a = bin(nombre)[2:]
+    #on renvoie a à la fin de la fonction
+    return a
 
-Exemple:
-```python
-nombre = 13
-binaire = bin(nombre)
-print(binaire)
-
-Résultat:
-Copier le code
-0b1101
-**Le préfixe 0b indique que le nombre est écrit en binaire.**
+#on imprime 12 en binaire
+print(transformationEnBinaire(12))`
 
 ## [Retour à la racine](https://my.flowershow.app/@corentinrordorf/python-markdown-theme-global)
