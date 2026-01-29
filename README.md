@@ -1,3 +1,8 @@
+---
+title: My Page
+syntaxMode: mdx
+---
+
 # Site de tutorials pour la classe d'OC 25-27
 
 ```mermaid
