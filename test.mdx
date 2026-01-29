@@ -3,22 +3,301 @@ title: Chiffrement RSA Interactif
 description: Outil de chiffrement et déchiffrement RSA
 ---
 
-import RSACrypto from './RSACrypto'
+export function RSACrypto() {
+  const [publicKey, setPublicKey] = React.useState('');
+  const [privateKey, setPrivateKey] = React.useState('');
+  const [textToEncrypt, setTextToEncrypt] = React.useState('');
+  const [encryptedText, setEncryptedText] = React.useState('');
+  const [textToDecrypt, setTextToDecrypt] = React.useState('');
+  const [decryptedText, setDecryptedText] = React.useState('');
+  const [message, setMessage] = React.useState('');
+  const [isClient, setIsClient] = React.useState(false);
+
+  React.useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  const arrayBufferToBase64 = (buffer) => {
+    let binary = '';
+    const bytes = new Uint8Array(buffer);
+    for (let i = 0; i < bytes.byteLength; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    return btoa(binary);
+  };
+
+  const base64ToArrayBuffer = (base64) => {
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+    return bytes.buffer;
+  };
+
+  const generateKeys = () => {
+    window.crypto.subtle.generateKey(
+      { name: 'RSA-OAEP', modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: 'SHA-256' },
+      true,
+      ['encrypt', 'decrypt']
+    ).then(keyPair => {
+      return Promise.all([
+        window.crypto.subtle.exportKey('spki', keyPair.publicKey),
+        window.crypto.subtle.exportKey('pkcs8', keyPair.privateKey)
+      ]);
+    }).then(([pub, priv]) => {
+      setPublicKey(arrayBufferToBase64(pub));
+      setPrivateKey(arrayBufferToBase64(priv));
+      setMessage('✅ Clés générées');
+      setTimeout(() => setMessage(''), 3000);
+    }).catch(err => {
+      setMessage('❌ Erreur : ' + err.message);
+    });
+  };
+
+  const encryptMessage = () => {
+    if (!publicKey || !textToEncrypt) {
+      setMessage('⚠️ Entrer une clé et un texte');
+      return;
+    }
+    
+    window.crypto.subtle.importKey(
+      'spki', 
+      base64ToArrayBuffer(publicKey), 
+      { name: 'RSA-OAEP', hash: 'SHA-256' }, 
+      false, 
+      ['encrypt']
+    ).then(key => {
+      return window.crypto.subtle.encrypt(
+        { name: 'RSA-OAEP' }, 
+        key, 
+        new TextEncoder().encode(textToEncrypt)
+      );
+    }).then(encrypted => {
+      setEncryptedText(arrayBufferToBase64(encrypted));
+      setMessage('✅ Chiffré !');
+      setTimeout(() => setMessage(''), 3000);
+    }).catch(err => {
+      setMessage('❌ Erreur : ' + err.message);
+    });
+  };
+
+  const decryptMessage = () => {
+    if (!privateKey || !textToDecrypt) {
+      setMessage('⚠️ Entrer une clé et un texte chiffré');
+      return;
+    }
+    
+    window.crypto.subtle.importKey(
+      'pkcs8', 
+      base64ToArrayBuffer(privateKey), 
+      { name: 'RSA-OAEP', hash: 'SHA-256' }, 
+      false, 
+      ['decrypt']
+    ).then(key => {
+      return window.crypto.subtle.decrypt(
+        { name: 'RSA-OAEP' }, 
+        key, 
+        base64ToArrayBuffer(textToDecrypt)
+      );
+    }).then(decrypted => {
+      setDecryptedText(new TextDecoder().decode(decrypted));
+      setMessage('✅ Déchiffré !');
+      setTimeout(() => setMessage(''), 3000);
+    }).catch(err => {
+      setMessage('❌ Erreur : ' + err.message);
+    });
+  };
+
+  const copy = (text) => {
+    navigator.clipboard.writeText(text);
+    setMessage('📋 Copié !');
+    setTimeout(() => setMessage(''), 2000);
+  };
+
+  if (!isClient) return <div>Chargement…</div>;
+
+  return (
+    <div style={{ maxWidth: 1000, margin: '20px auto', padding: 20 }}>
+      {message && (
+        <div style={{ 
+          padding: 12, 
+          marginBottom: 20, 
+          backgroundColor: message.includes('❌') ? '#fee' : message.includes('⚠️') ? '#fff3cd' : '#efe', 
+          color: message.includes('❌') ? '#c33' : message.includes('⚠️') ? '#856404' : '#363', 
+          borderRadius: 8,
+          fontWeight: 600
+        }}>
+          {message}
+        </div>
+      )}
+
+      <div style={{ backgroundColor: '#f8f9fa', padding: 20, borderRadius: 12, marginBottom: 20 }}>
+        <h3 style={{ marginTop: 0 }}>🔑 Clés RSA</h3>
+        <button 
+          onClick={generateKeys} 
+          style={{ 
+            padding: '12px 24px', 
+            borderRadius: 8, 
+            backgroundColor: '#667eea', 
+            color: 'white', 
+            border: 'none', 
+            cursor: 'pointer',
+            fontWeight: 600,
+            marginBottom: 15
+          }}
+        >
+          Générer nouvelles clés
+        </button>
+
+        <div style={{ marginBottom: 15 }}>
+          <label style={{ display: 'block', marginBottom: 5, fontWeight: 600 }}>Clé publique:</label>
+          <textarea 
+            value={publicKey}
+            onChange={e => setPublicKey(e.target.value)}
+            placeholder="Générer ou coller votre clé publique..."
+            style={{ 
+              width: '100%', 
+              minHeight: 100, 
+              padding: 10, 
+              borderRadius: 6, 
+              border: '1px solid #ddd', 
+              fontSize: 12,
+              fontFamily: 'monospace'
+            }} 
+          />
+          {publicKey && (
+            <button onClick={() => copy(publicKey)} style={{ marginTop: 5, padding: '6px 12px', borderRadius: 6, cursor: 'pointer' }}>
+              📋 Copier
+            </button>
+          )}
+        </div>
+
+        <div>
+          <label style={{ display: 'block', marginBottom: 5, fontWeight: 600 }}>Clé privée:</label>
+          <textarea 
+            value={privateKey}
+            onChange={e => setPrivateKey(e.target.value)}
+            placeholder="Générer ou coller votre clé privée..."
+            style={{ 
+              width: '100%', 
+              minHeight: 100, 
+              padding: 10, 
+              borderRadius: 6, 
+              border: '1px solid #ddd', 
+              fontSize: 12,
+              fontFamily: 'monospace'
+            }} 
+          />
+          {privateKey && (
+            <button onClick={() => copy(privateKey)} style={{ marginTop: 5, padding: '6px 12px', borderRadius: 6, cursor: 'pointer' }}>
+              📋 Copier
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+        <div style={{ backgroundColor: '#f8f9fa', padding: 20, borderRadius: 12 }}>
+          <h3 style={{ marginTop: 0 }}>🔒 Chiffrer</h3>
+          <textarea 
+            value={textToEncrypt} 
+            onChange={e => setTextToEncrypt(e.target.value)} 
+            placeholder="Texte à chiffrer..." 
+            style={{ width: '100%', minHeight: 120, padding: 10, borderRadius: 6, border: '1px solid #ddd' }} 
+          />
+          <button 
+            onClick={encryptMessage}
+            style={{ 
+              marginTop: 10,
+              padding: '10px 20px', 
+              borderRadius: 8, 
+              backgroundColor: '#667eea', 
+              color: 'white', 
+              border: 'none', 
+              cursor: 'pointer',
+              fontWeight: 600
+            }}
+          >
+            Chiffrer
+          </button>
+          {encryptedText && (
+            <div style={{ marginTop: 15 }}>
+              <label style={{ display: 'block', marginBottom: 5, fontWeight: 600 }}>Résultat:</label>
+              <textarea
+                value={encryptedText}
+                readOnly
+                style={{ 
+                  width: '100%', 
+                  minHeight: 120, 
+                  padding: 10, 
+                  borderRadius: 6, 
+                  border: '1px solid #ddd',
+                  fontSize: 12,
+                  fontFamily: 'monospace'
+                }}
+              />
+              <button onClick={() => copy(encryptedText)} style={{ marginTop: 5, padding: '6px 12px', borderRadius: 6, cursor: 'pointer' }}>
+                📋 Copier
+              </button>
+            </div>
+          )}
+        </div>
+
+        <div style={{ backgroundColor: '#f8f9fa', padding: 20, borderRadius: 12 }}>
+          <h3 style={{ marginTop: 0 }}>🔓 Déchiffrer</h3>
+          <textarea 
+            value={textToDecrypt} 
+            onChange={e => setTextToDecrypt(e.target.value)} 
+            placeholder="Texte chiffré..." 
+            style={{ width: '100%', minHeight: 120, padding: 10, borderRadius: 6, border: '1px solid #ddd', fontSize: 12, fontFamily: 'monospace' }} 
+          />
+          <button 
+            onClick={decryptMessage}
+            style={{ 
+              marginTop: 10,
+              padding: '10px 20px', 
+              borderRadius: 8, 
+              backgroundColor: '#667eea', 
+              color: 'white', 
+              border: 'none', 
+              cursor: 'pointer',
+              fontWeight: 600
+            }}
+          >
+            Déchiffrer
+          </button>
+          {decryptedText && (
+            <div style={{ marginTop: 15 }}>
+              <label style={{ display: 'block', marginBottom: 5, fontWeight: 600 }}>Résultat:</label>
+              <div style={{ 
+                backgroundColor: '#d4edda', 
+                padding: 10, 
+                borderRadius: 6,
+                border: '1px solid #c3e6cb',
+                minHeight: 120
+              }}>
+                {decryptedText}
+              </div>
+              <button onClick={() => copy(decryptedText)} style={{ marginTop: 5, padding: '6px 12px', borderRadius: 6, cursor: 'pointer' }}>
+                📋 Copier
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 # 🔐 Chiffrement RSA
 
-Cet outil utilise l'API Web Crypto pour générer des clés RSA et chiffrer/déchiffrer des messages de manière sécurisée directement dans votre navigateur.
+Outil de chiffrement et déchiffrement RSA avec Web Crypto API.
 
 <RSACrypto />
 
-## Comment ça marche ?
+## Comment utiliser
 
-1. **Générer des clés** : Cliquez sur le bouton pour créer une paire de clés RSA (2048 bits)
-2. **Chiffrer** : Entrez votre message et cliquez sur "Chiffrer" (utilise la clé publique)
-3. **Déchiffrer** : Collez le message chiffré et cliquez sur "Déchiffrer" (utilise la clé privée)
-
-## Sécurité
-
-- Les clés sont générées localement dans votre navigateur
-- Aucune donnée n'est envoyée à un serveur
-- Utilise l'algorithme RSA-OAEP avec SHA-256
+1. **Générer des clés** ou coller vos propres clés dans les champs
+2. **Chiffrer** : Entrez votre texte et cliquez sur "Chiffrer"
+3. **Déchiffrer** : Collez le texte chiffré et cliquez sur "Déchiffrer"
