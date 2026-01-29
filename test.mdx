@@ -1,26 +1,24 @@
 ---
 title: Chiffrement RSA Interactif
 description: Outil de chiffrement et déchiffrement RSA
-syntaxMode: mdx
 ---
 
-import RSACrypto from '../components/RSACrypto';
+import RSACrypto from './RSACrypto'
 
 # 🔐 Chiffrement RSA
 
-Cet outil utilise l’API **Web Crypto** pour générer des clés RSA et
-chiffrer / déchiffrer des messages **directement dans le navigateur**.
+Cet outil utilise l'API Web Crypto pour générer des clés RSA et chiffrer/déchiffrer des messages de manière sécurisée directement dans votre navigateur.
 
 <RSACrypto />
 
 ## Comment ça marche ?
 
-1. **Générer des clés** : création locale d’une paire RSA 2048 bits
-2. **Chiffrer** : le message est chiffré avec la clé publique
-3. **Déchiffrer** : le message est déchiffré avec la clé privée
+1. **Générer des clés** : Cliquez sur le bouton pour créer une paire de clés RSA (2048 bits)
+2. **Chiffrer** : Entrez votre message et cliquez sur "Chiffrer" (utilise la clé publique)
+3. **Déchiffrer** : Collez le message chiffré et cliquez sur "Déchiffrer" (utilise la clé privée)
 
 ## Sécurité
 
-- Les clés ne quittent jamais votre navigateur
-- Aucune requête réseau
-- RSA-OAEP + SHA-256
+- Les clés sont générées localement dans votre navigateur
+- Aucune donnée n'est envoyée à un serveur
+- Utilise l'algorithme RSA-OAEP avec SHA-256
