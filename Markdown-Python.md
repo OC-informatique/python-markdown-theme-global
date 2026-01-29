@@ -65,6 +65,7 @@ chiffre = int(chiffre)
 
 On utilise la fonction `bin()` de math et rajoute un argument `[2:]` afin de se débarasser des deux premiers caractères qu'il renvoie. Ainsi, on peut écrire par exemple: `a=bin(12)[2:]` où `a` sera égale à l'écriture binaire de 12 sans l'argument 0b qui le précède abituellement lorsque on utilise la fonction `bin()`.
 Le programe final qui fait ceci, défini en fonction serait donc:
+```python
 `from math import *
 
 def transformationEnBinaire(nombre):
@@ -77,5 +78,6 @@ def transformationEnBinaire(nombre):
 
 #on imprime 12 en binaire
 print(transformationEnBinaire(12))`
+```
 
 ## [Retour à la racine](https://my.flowershow.app/@corentinrordorf/python-markdown-theme-global)
