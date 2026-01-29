@@ -12,7 +12,7 @@ J'écris du *text*.
 ## Les chaînes de caractère en python
 
 ## Les listes en python
-
+HAKUNA MATATA!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ## La boucle while en python
 
 ## La boucle for en python
