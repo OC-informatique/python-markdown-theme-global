@@ -1,0 +1,427 @@
+---
+title: Chiffrement RSA Interactif
+description: Outil de chiffrement et déchiffrement RSA
+---
+
+import { useState, useEffect } from 'react';
+
+export const RSACrypto = () => {
+  const [publicKey, setPublicKey] = useState('');
+  const [privateKey, setPrivateKey] = useState('');
+  const [textToEncrypt, setTextToEncrypt] = useState('');
+  const [encryptedText, setEncryptedText] = useState('');
+  const [textToDecrypt, setTextToDecrypt] = useState('');
+  const [decryptedText, setDecryptedText] = useState('');
+  const [message, setMessage] = useState('');
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  if (!isClient) {
+    return <div style={{ padding: '20px', textAlign: 'center' }}>Chargement...</div>;
+  }
+
+  const generateKeys = async () => {
+    if (typeof window === 'undefined') {
+      setMessage('❌ Cette fonctionnalité nécessite un navigateur');
+      return;
+    }
+    try {
+      const keyPair = await window.crypto.subtle.generateKey(
+        {
+          name: "RSA-OAEP",
+          modulusLength: 2048,
+          publicExponent: new Uint8Array([1, 0, 1]),
+          hash: "SHA-256",
+        },
+        true,
+        ["encrypt", "decrypt"]
+      );
+
+      const exportedPublicKey = await window.crypto.subtle.exportKey("spki", keyPair.publicKey);
+      const exportedPrivateKey = await window.crypto.subtle.exportKey("pkcs8", keyPair.privateKey);
+
+      const publicKeyPem = arrayBufferToBase64(exportedPublicKey);
+      const privateKeyPem = arrayBufferToBase64(exportedPrivateKey);
+
+      setPublicKey(publicKeyPem);
+      setPrivateKey(privateKeyPem);
+      setMessage('✅ Clés générées avec succès !');
+      setTimeout(() => setMessage(''), 3000);
+    } catch (error) {
+      setMessage('❌ Erreur : ' + error.message);
+    }
+  };
+
+  const arrayBufferToBase64 = (buffer) => {
+    let binary = '';
+    const bytes = new Uint8Array(buffer);
+    for (let i = 0; i < bytes.byteLength; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    return btoa(binary);
+  };
+
+  const base64ToArrayBuffer = (base64) => {
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+    return bytes.buffer;
+  };
+
+  const encryptMessage = async () => {
+    if (!publicKey || !textToEncrypt) {
+      setMessage('⚠️ Veuillez générer une clé et entrer du texte');
+      return;
+    }
+
+    try {
+      const publicKeyBuffer = base64ToArrayBuffer(publicKey);
+      const importedKey = await window.crypto.subtle.importKey(
+        "spki",
+        publicKeyBuffer,
+        { name: "RSA-OAEP", hash: "SHA-256" },
+        false,
+        ["encrypt"]
+      );
+
+      const encoder = new TextEncoder();
+      const data = encoder.encode(textToEncrypt);
+      const encrypted = await window.crypto.subtle.encrypt(
+        { name: "RSA-OAEP" },
+        importedKey,
+        data
+      );
+
+      const encryptedBase64 = arrayBufferToBase64(encrypted);
+      setEncryptedText(encryptedBase64);
+      setMessage('✅ Message chiffré !');
+      setTimeout(() => setMessage(''), 3000);
+    } catch (error) {
+      setMessage('❌ Erreur de chiffrement : ' + error.message);
+    }
+  };
+
+  const decryptMessage = async () => {
+    if (!privateKey || !textToDecrypt) {
+      setMessage('⚠️ Veuillez générer une clé et entrer du texte chiffré');
+      return;
+    }
+
+    try {
+      const privateKeyBuffer = base64ToArrayBuffer(privateKey);
+      const importedKey = await window.crypto.subtle.importKey(
+        "pkcs8",
+        privateKeyBuffer,
+        { name: "RSA-OAEP", hash: "SHA-256" },
+        false,
+        ["decrypt"]
+      );
+
+      const encryptedBuffer = base64ToArrayBuffer(textToDecrypt);
+      const decrypted = await window.crypto.subtle.decrypt(
+        { name: "RSA-OAEP" },
+        importedKey,
+        encryptedBuffer
+      );
+
+      const decoder = new TextDecoder();
+      const decryptedText = decoder.decode(decrypted);
+      setDecryptedText(decryptedText);
+      setMessage('✅ Message déchiffré !');
+      setTimeout(() => setMessage(''), 3000);
+    } catch (error) {
+      setMessage('❌ Erreur de déchiffrement : ' + error.message);
+    }
+  };
+
+  const copyToClipboard = (text) => {
+    if (typeof window === 'undefined' || !navigator.clipboard) {
+      setMessage('❌ Copie non disponible');
+      return;
+    }
+    navigator.clipboard.writeText(text);
+    setMessage('📋 Copié !');
+    setTimeout(() => setMessage(''), 2000);
+  };
+
+  return (
+    <div style={{ 
+      maxWidth: '800px', 
+      margin: '20px auto', 
+      padding: '20px',
+      fontFamily: 'system-ui, -apple-system, sans-serif'
+    }}>
+      {message && (
+        <div style={{
+          padding: '12px',
+          marginBottom: '20px',
+          borderRadius: '8px',
+          backgroundColor: message.includes('❌') ? '#fee' : '#efe',
+          color: message.includes('❌') ? '#c33' : '#363',
+          fontWeight: '600'
+        }}>
+          {message}
+        </div>
+      )}
+
+      <div style={{
+        backgroundColor: '#f8f9fa',
+        padding: '20px',
+        borderRadius: '12px',
+        marginBottom: '20px'
+      }}>
+        <h3 style={{ marginTop: 0 }}>🔑 Génération de clés</h3>
+        <button
+          onClick={generateKeys}
+          style={{
+            backgroundColor: '#667eea',
+            color: 'white',
+            border: 'none',
+            padding: '12px 24px',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            fontSize: '16px',
+            fontWeight: '600'
+          }}
+        >
+          Générer des clés RSA
+        </button>
+
+        {publicKey && (
+          <div style={{ marginTop: '15px' }}>
+            <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600' }}>
+              Clé publique :
+            </label>
+            <div style={{
+              backgroundColor: 'white',
+              padding: '10px',
+              borderRadius: '6px',
+              fontSize: '12px',
+              fontFamily: 'monospace',
+              wordBreak: 'break-all',
+              maxHeight: '100px',
+              overflow: 'auto',
+              border: '1px solid #ddd'
+            }}>
+              {publicKey.substring(0, 100)}...
+            </div>
+            <button
+              onClick={() => copyToClipboard(publicKey)}
+              style={{
+                marginTop: '8px',
+                padding: '6px 12px',
+                borderRadius: '6px',
+                border: '1px solid #ddd',
+                backgroundColor: 'white',
+                cursor: 'pointer'
+              }}
+            >
+              📋 Copier
+            </button>
+          </div>
+        )}
+
+        {privateKey && (
+          <div style={{ marginTop: '15px' }}>
+            <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600' }}>
+              Clé privée :
+            </label>
+            <div style={{
+              backgroundColor: 'white',
+              padding: '10px',
+              borderRadius: '6px',
+              fontSize: '12px',
+              fontFamily: 'monospace',
+              wordBreak: 'break-all',
+              maxHeight: '100px',
+              overflow: 'auto',
+              border: '1px solid #ddd'
+            }}>
+              {privateKey.substring(0, 100)}...
+            </div>
+            <button
+              onClick={() => copyToClipboard(privateKey)}
+              style={{
+                marginTop: '8px',
+                padding: '6px 12px',
+                borderRadius: '6px',
+                border: '1px solid #ddd',
+                backgroundColor: 'white',
+                cursor: 'pointer'
+              }}
+            >
+              📋 Copier
+            </button>
+          </div>
+        )}
+      </div>
+
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: '1fr 1fr',
+        gap: '20px'
+      }}>
+        <div style={{
+          backgroundColor: '#f8f9fa',
+          padding: '20px',
+          borderRadius: '12px'
+        }}>
+          <h3 style={{ marginTop: 0 }}>🔒 Chiffrement</h3>
+          <textarea
+            value={textToEncrypt}
+            onChange={(e) => setTextToEncrypt(e.target.value)}
+            placeholder="Texte à chiffrer..."
+            style={{
+              width: '100%',
+              minHeight: '100px',
+              padding: '10px',
+              borderRadius: '6px',
+              border: '1px solid #ddd',
+              fontSize: '14px',
+              fontFamily: 'inherit'
+            }}
+          />
+          <button
+            onClick={encryptMessage}
+            style={{
+              marginTop: '10px',
+              backgroundColor: '#667eea',
+              color: 'white',
+              border: 'none',
+              padding: '10px 20px',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontWeight: '600'
+            }}
+          >
+            Chiffrer
+          </button>
+
+          {encryptedText && (
+            <div style={{ marginTop: '15px' }}>
+              <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600' }}>
+                Résultat :
+              </label>
+              <div style={{
+                backgroundColor: 'white',
+                padding: '10px',
+                borderRadius: '6px',
+                fontSize: '12px',
+                fontFamily: 'monospace',
+                wordBreak: 'break-all',
+                maxHeight: '100px',
+                overflow: 'auto',
+                border: '1px solid #ddd'
+              }}>
+                {encryptedText}
+              </div>
+              <button
+                onClick={() => copyToClipboard(encryptedText)}
+                style={{
+                  marginTop: '8px',
+                  padding: '6px 12px',
+                  borderRadius: '6px',
+                  border: '1px solid #ddd',
+                  backgroundColor: 'white',
+                  cursor: 'pointer'
+                }}
+              >
+                📋 Copier
+              </button>
+            </div>
+          )}
+        </div>
+
+        <div style={{
+          backgroundColor: '#f8f9fa',
+          padding: '20px',
+          borderRadius: '12px'
+        }}>
+          <h3 style={{ marginTop: 0 }}>🔓 Déchiffrement</h3>
+          <textarea
+            value={textToDecrypt}
+            onChange={(e) => setTextToDecrypt(e.target.value)}
+            placeholder="Texte chiffré à déchiffrer..."
+            style={{
+              width: '100%',
+              minHeight: '100px',
+              padding: '10px',
+              borderRadius: '6px',
+              border: '1px solid #ddd',
+              fontSize: '14px',
+              fontFamily: 'inherit'
+            }}
+          />
+          <button
+            onClick={decryptMessage}
+            style={{
+              marginTop: '10px',
+              backgroundColor: '#667eea',
+              color: 'white',
+              border: 'none',
+              padding: '10px 20px',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontWeight: '600'
+            }}
+          >
+            Déchiffrer
+          </button>
+
+          {decryptedText && (
+            <div style={{ marginTop: '15px' }}>
+              <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600' }}>
+                Résultat :
+              </label>
+              <div style={{
+                backgroundColor: '#d4edda',
+                padding: '10px',
+                borderRadius: '6px',
+                fontSize: '14px',
+                border: '1px solid #c3e6cb'
+              }}>
+                {decryptedText}
+              </div>
+              <button
+                onClick={() => copyToClipboard(decryptedText)}
+                style={{
+                  marginTop: '8px',
+                  padding: '6px 12px',
+                  borderRadius: '6px',
+                  border: '1px solid #ddd',
+                  backgroundColor: 'white',
+                  cursor: 'pointer'
+                }}
+              >
+                📋 Copier
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+# 🔐 Chiffrement RSA
+
+Cet outil utilise l'API Web Crypto pour générer des clés RSA et chiffrer/déchiffrer des messages de manière sécurisée directement dans votre navigateur.
+
+<RSACrypto />
+
+## Comment ça marche ?
+
+1. **Générer des clés** : Cliquez sur le bouton pour créer une paire de clés RSA (2048 bits)
+2. **Chiffrer** : Entrez votre message et cliquez sur "Chiffrer" (utilise la clé publique)
+3. **Déchiffrer** : Collez le message chiffré et cliquez sur "Déchiffrer" (utilise la clé privée)
+
+## Sécurité
+
+- Les clés sont générées localement dans votre navigateur
+- Aucune donnée n'est envoyée à un serveur
+- Utilise l'algorithme RSA-OAEP avec SHA-256
