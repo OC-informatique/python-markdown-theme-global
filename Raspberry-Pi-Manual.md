@@ -7,7 +7,7 @@
 
 ## Code pour allumer une led
 
-'''python
+```python
 from machine import Pin
 import time
 
@@ -18,6 +18,6 @@ while True:
     time.sleep(1)
     led.value(0)      # LED OFF
     time.sleep(1)
-'''
+```
 
 ## [Retour à la racine](https://my.flowershow.app/@corentinrordorf/python-markdown-theme-global)
