@@ -2,11 +2,11 @@
 
 ```mermaid
 graph LR
-  A[Problem] --> B{Work}
-  B -->|Yes| C[Success]
-  B -->|No| D[Failure]
-  C --> E[6]
-  D --> G[2]
+    A[Problem] --> B{Work}
+    B -->|Yes| C[Success]
+    B -->|No| D[Failure]
+    C --> E[6]
+    D --> F[2]
 ```
 
 - [Manuel Python](https://my.flowershow.app/@corentinrordorf/python-markdown-theme-global/Markdown-Python)
