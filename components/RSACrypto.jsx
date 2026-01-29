@@ -12,9 +12,11 @@ export default function RSACrypto() {
   const [message, setMessage] = useState('');
   const [isClient, setIsClient] = useState(false);
 
-  useEffect(() => setIsClient(true), []);
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
-  const arrayBufferToBase64 = (buffer: ArrayBuffer) => {
+  const arrayBufferToBase64 = (buffer) => {
     let binary = '';
     const bytes = new Uint8Array(buffer);
     for (let i = 0; i < bytes.byteLength; i++) {
@@ -23,7 +25,7 @@ export default function RSACrypto() {
     return btoa(binary);
   };
 
-  const base64ToArrayBuffer = (base64: string) => {
+  const base64ToArrayBuffer = (base64) => {
     const binary = atob(base64);
     const bytes = new Uint8Array(binary.length);
     for (let i = 0; i < binary.length; i++) {
@@ -32,58 +34,81 @@ export default function RSACrypto() {
     return bytes.buffer;
   };
 
-  const generateKeys = async () => {
-    try {
-      const keyPair = await window.crypto.subtle.generateKey(
-        { name: 'RSA-OAEP', modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: 'SHA-256' },
-        true,
-        ['encrypt', 'decrypt']
-      );
-      const pub = await window.crypto.subtle.exportKey('spki', keyPair.publicKey);
-      const priv = await window.crypto.subtle.exportKey('pkcs8', keyPair.privateKey);
-
+  const generateKeys = () => {
+    window.crypto.subtle.generateKey(
+      { name: 'RSA-OAEP', modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: 'SHA-256' },
+      true,
+      ['encrypt', 'decrypt']
+    ).then(keyPair => {
+      return Promise.all([
+        window.crypto.subtle.exportKey('spki', keyPair.publicKey),
+        window.crypto.subtle.exportKey('pkcs8', keyPair.privateKey)
+      ]);
+    }).then(([pub, priv]) => {
       setPublicKey(arrayBufferToBase64(pub));
       setPrivateKey(arrayBufferToBase64(priv));
       setMessage('✅ Clés générées avec succès');
       setTimeout(() => setMessage(''), 3000);
-    } catch (err: any) {
+    }).catch(err => {
       setMessage('❌ Erreur : ' + err.message);
-    }
+    });
   };
 
-  const encryptMessage = async () => {
+  const encryptMessage = () => {
     if (!publicKey || !textToEncrypt) {
       setMessage('⚠️ Entrer une clé publique et un texte');
       return;
     }
-    try {
-      const key = await window.crypto.subtle.importKey('spki', base64ToArrayBuffer(publicKey), { name: 'RSA-OAEP', hash: 'SHA-256' }, false, ['encrypt']);
-      const encrypted = await window.crypto.subtle.encrypt({ name: 'RSA-OAEP' }, key, new TextEncoder().encode(textToEncrypt));
+    
+    window.crypto.subtle.importKey(
+      'spki', 
+      base64ToArrayBuffer(publicKey), 
+      { name: 'RSA-OAEP', hash: 'SHA-256' }, 
+      false, 
+      ['encrypt']
+    ).then(key => {
+      return window.crypto.subtle.encrypt(
+        { name: 'RSA-OAEP' }, 
+        key, 
+        new TextEncoder().encode(textToEncrypt)
+      );
+    }).then(encrypted => {
       setEncryptedText(arrayBufferToBase64(encrypted));
       setMessage('✅ Message chiffré !');
       setTimeout(() => setMessage(''), 3000);
-    } catch (err: any) {
+    }).catch(err => {
       setMessage('❌ Erreur de chiffrement : ' + err.message);
-    }
+    });
   };
 
-  const decryptMessage = async () => {
+  const decryptMessage = () => {
     if (!privateKey || !textToDecrypt) {
       setMessage('⚠️ Entrer une clé privée et un texte chiffré');
       return;
     }
-    try {
-      const key = await window.crypto.subtle.importKey('pkcs8', base64ToArrayBuffer(privateKey), { name: 'RSA-OAEP', hash: 'SHA-256' }, false, ['decrypt']);
-      const decrypted = await window.crypto.subtle.decrypt({ name: 'RSA-OAEP' }, key, base64ToArrayBuffer(textToDecrypt));
+    
+    window.crypto.subtle.importKey(
+      'pkcs8', 
+      base64ToArrayBuffer(privateKey), 
+      { name: 'RSA-OAEP', hash: 'SHA-256' }, 
+      false, 
+      ['decrypt']
+    ).then(key => {
+      return window.crypto.subtle.decrypt(
+        { name: 'RSA-OAEP' }, 
+        key, 
+        base64ToArrayBuffer(textToDecrypt)
+      );
+    }).then(decrypted => {
       setDecryptedText(new TextDecoder().decode(decrypted));
       setMessage('✅ Message déchiffré !');
       setTimeout(() => setMessage(''), 3000);
-    } catch (err: any) {
+    }).catch(err => {
       setMessage('❌ Erreur de déchiffrement : ' + err.message);
-    }
+    });
   };
 
-  const copyToClipboard = (text: string) => {
+  const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
     setMessage('📋 Copié !');
     setTimeout(() => setMessage(''), 2000);
