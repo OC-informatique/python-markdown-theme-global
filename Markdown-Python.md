@@ -81,8 +81,8 @@ des pins d’alimentation
 
 ## Faire tourner un servo
 
-Si l'on veut par exemple faire bouger le servo d'un certain angle il faut utiliser la formule suivante: f(x)=(65535*0.5/20)+(65535*2.5/20-65535*0.5/20)/180x
-On peut trouver cette formule en sachant que si l'on veut que la position du servo =180°, on a 65535*2.5/20, et si position du servo =0° on a 65535*0.5/20, en utilisant la formule pour trouver la droite que fait une fonction: f(x)=f(a)+(f(b)-f(a))/(b-a)*(x-a) on peut créer une fonction que l'on va appeler `setServoCycle`:
+Si l'on veut par exemple faire bouger le servo d'un certain angle il faut utiliser la formule suivante: f(x)=(65535 * 0.5/20)+(65535 * 2.5/20-65535 * 0.5/20)/180x
+On peut trouver cette formule en sachant que si l'on veut que la position du servo =180°, on a 65535 * 2.5/20, et si position du servo =0° on a 65535 * 0.5/20, en utilisant la formule pour trouver la droite que fait une fonction: f(x)=f(a)+(f(b)-f(a))/(b-a) * (x-a) on peut créer une fonction que l'on va appeler `setServoCycle`:
 
 `from machine import Pin, PWM, ADC
 pwm = PWM(Pin(0))
