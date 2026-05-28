@@ -7,6 +7,7 @@ It supports **markdown**
 :::
 
 La personne qui a rajouté l'équivalent des trois bouquins des seigneurs des anneaux aille se faire voire. C'est une dinguerie de faire ça.
+Je crois c'était Naïm
 
 ## Les dictionnaires en python
 MORSE_LIST = {
