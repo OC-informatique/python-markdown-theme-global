@@ -458,3 +458,13 @@ Pas de résistance avec LED
 
 
 ## [Retour à la racine](https://my.flowershow.app/@corentinrordorf/python-markdown-theme-global)
+
+# W
+
+/!\     from machine import Pin, ADC
+        import time
+
+valeur entière pot = 65 536
+valeur = pot.read_u16()
+pot = ADC
+bouton = Pin.IN, Pin.PULL_UP
