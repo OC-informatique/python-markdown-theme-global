@@ -48,8 +48,6 @@ On transforme le nombre en **chaîne (`str`)**, puis on parcourt chaque caractè
 On utilise la fonction `bin()` de math et rajoute un argument `[2:]` afin de se débarasser des deux premiers caractères qu'il renvoie. Ainsi, on peut écrire par exemple: `a=bin(12)[2:]` où `a` sera égale à l'écriture binaire de 12 sans l'argument 0b qui le précède abituellement lorsque on utilise la fonction `bin()`.
 Le programe final qui fait ceci, défini en fonction serait donc:
 
-## [Retour à la racine](https://my.flowershow.app/@corentinrordorf/python-markdown-theme-global)
-
 # Ce qu’il faut absolument savoir pour l’examen
 Calculer la résistance avec une LED
 Comprendre les GPIO
@@ -800,3 +798,4 @@ conditions
 
 fonctions
 
+## [Retour à la racine](https://my.flowershow.app/@corentinrordorf/python-markdown-theme-global)
