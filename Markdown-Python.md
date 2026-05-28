@@ -22,6 +22,74 @@ LISTE_INVERSE = {
     "..-":"u", "...-":"v", ".--":"w", "-..-":"x", "-.--":"y", "--..":"z", "":""
 }
 
+## Explication des Calculs Complexes
+
+1. Conversion angle → duty cycle (servo basique)
+pythonmin_duty = 1638
+max_duty = 8092
+duty = int(min_duty + (angle / 180) * (max_duty - min_duty))
+Un servo se contrôle avec un signal PWM dont la largeur d'impulsion varie entre deux bornes. Ici on fait une interpolation linéaire :
+
+angle / 180 → ramène l'angle dans l'intervalle [0 ; 1]
+(max_duty - min_duty) = 6454 → c'est toute la plage disponible
+On multiplie les deux pour savoir quelle fraction de cette plage utiliser
+On ajoute min_duty pour partir du bon point de départ
+
+Exemple pour 90° : 1638 + (90/180) × 6454 = 1638 + 3227 = 4865
+
+2. Position de l'aiguille d'horloge
+pythonif angle <= 6:
+    set_angle(180 - angle * 30)
+if angle > 6:
+    set_angle(180 - (angle * 30 - 180))
+Une horloge a 12 heures → chaque heure = 360°/12 = 30°. Mais le servo ne fait que 180°, donc on divise en deux moitiés :
+
+Heures 0→6 (première moitié du cadran) : 180 - angle×30
+
+À 0h → 180 - 0 = 180°
+À 6h → 180 - 180 = 0°
+
+
+Heures 7→12 (deuxième moitié) : 180 - (angle×30 - 180)
+
+Le - 180 soustrait le "tour" déjà effectué pour repartir de 0
+À 7h → 180 - (210 - 180) = 150°
+À 12h → 180 - (360 - 180) = 0°... et on repart
+
+
+
+
+3. Conversion potentiomètre → servo
+pythonreturn int(1800 + (valeur / 65535) * (8200 - 1800))
+Même principe d'interpolation linéaire que le calcul n°1 :
+
+Le potentiomètre retourne une valeur entre 0 et 65535
+valeur / 65535 → ramène dans [0 ; 1]
+On projette ensuite cette fraction sur la plage du servo [1800 ; 8200]
+
+
+4. Conversion en tension (volts)
+pythontension = valeur * 3.3 / 65535
+Le convertisseur analogique-numérique (ADC) encode la tension sur 16 bits, soit 65535 niveaux max, correspondant à 3.3V (tension max du Raspberry Pi Pico). On fait donc une simple règle de trois :
+65535  →  3.3 V
+valeur →  ?  V  =  valeur × 3.3 / 65535
+
+5. La fonction f(x) (version avec formule de droite explicite)
+pythony = (65535*0.5/20) + ((65535*2.5/20) - (65535*0.5/20)) / 180 * x
+C'est la formule d'une droite : f(x) = f(a) + (f(b) - f(a)) / (b - a) × (x - a)
+Les servos standard ont un signal entre 0.5ms et 2.5ms pour une période de 20ms (50Hz). En duty cycle 16 bits :
+PositionDurée impulsionCalcul duty cycle0°0.5 ms65535 × 0.5 / 20 ≈ 1638180°2.5 ms65535 × 2.5 / 20 ≈ 8192
+La formule interpole linéairement entre ces deux points selon l'angle x.
+
+6. Compteur binaire avec 4 LEDs
+pythona = bin(a)[2:]
+while len(a) < 4:
+    a = "0" + a
+
+bin(5) retourne '0b101' → le [2:] supprime le préfixe 0b → '101'
+La boucle while complète avec des zéros à gauche pour toujours avoir 4 chiffres → '0101'
+Ensuite on lit chaque caractère et on allume la LED correspondante si c'est un 1
+
 ## Les chaînes de caractère en python
 
 En Python, une chaîne de caractères (ou *string*) est une suite de caractères utilisée pour représenter du texte. Elle est définie à l’aide de guillemets simples (`'`), doubles (`"`) ou triples (`'''` ou `"""`) pour les textes sur plusieurs lignes. Les chaînes sont **immuables**, ce qui signifie qu’on ne peut pas modifier un caractère directement une fois la chaîne créée. Python offre de nombreuses opérations sur les chaînes, comme la concaténation avec `+`, la répétition avec `*`, l’accès à un caractère par son indice, ou encore des méthodes très pratiques comme `upper()`, `lower()`, `split()` et `replace()`. Les chaînes de caractères sont très utilisées pour la gestion des données textuelles, l’affichage de messages et la manipulation d’entrées utilisateur.
