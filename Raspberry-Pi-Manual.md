@@ -19,7 +19,7 @@ while True:
     led.value(0)      # LED OFF
     time.sleep(1)
 ```
-Glossaire MicroPython pour Raspberry Pi Pico
+## Glossaire MicroPython pour Raspberry Pi Pico
 
 Imports et modules
 from machine import Pin, PWM, ADC — Importe les classes nécessaires depuis le module machine pour contrôler le matériel (broches, PWM, lecture analogique).
