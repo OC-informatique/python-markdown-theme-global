@@ -81,11 +81,13 @@ morse(mot) — Fonction personnalisée qui prend un mot et fait clignoter une LE
 Variables d'état
 
 timerstarted — Variable booléenne (True/False) qui indique si le chronomètre est en cours. Sert à savoir si on a déjà commencé à mesurer un appui.
+
 Résumé visuel des valeurs
 
+duty_u16 --> 0 – 65535 --> 0% – 100% du cycle
 
-Composant	   Plage de valeurs	   Signification
-duty_u16	      0 – 65535	         0% – 100% du cycle
-pot.read_u16()	0 – 65535	         0V – 3.3V
-button.value()	0 ou 1	            appuyé (0) / relâché (1) avec PULL_UP
-servo à 50Hz	~1800 – 8200 (duty)	0° – 180°
+pot.read_u16() --> 0 – 65535 --> 0V – 3.3V
+
+button.value() --> 0 ou 1 --> appuyé (0) / relâché (1) avec PULL_UP
+
+servo à 50Hz --> ~1800 – 8200 (duty) --> 0° – 180°
