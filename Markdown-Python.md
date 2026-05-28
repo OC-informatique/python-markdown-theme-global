@@ -26,11 +26,9 @@ LISTE_INVERSE = {
 
 1. Conversion angle → duty cycle (servo basique)
 
-pythonmin_duty = 1638
-
-max_duty = 8092
-
-duty = int(min_duty + (angle / 180) * (max_duty - min_duty))
+        min_duty = 1638
+        max_duty = 8092
+        duty = int(min_duty + (angle / 180) * (max_duty - min_duty))
 
 Un servo se contrôle avec un signal PWM dont la largeur d'impulsion varie entre deux bornes. Ici on fait une interpolation linéaire :
 
@@ -42,14 +40,11 @@ On ajoute min_duty pour partir du bon point de départ
 Exemple pour 90° : 1638 + (90/180) × 6454 = 1638 + 3227 = 4865
 
 2. Position de l'aiguille d'horloge
-   
-pythonif angle <= 6:
 
-    set_angle(180 - angle * 30)
-    
-if angle > 6:
-
-    set_angle(180 - (angle * 30 - 180))
+        if angle <= 6:
+            set_angle(180 - angle * 30)
+        if angle > 6:
+            set_angle(180 - (angle * 30 - 180))
     
 Une horloge a 12 heures → chaque heure = 360°/12 = 30°. Mais le servo ne fait que 180°, donc on divise en deux moitiés :
 
@@ -70,7 +65,7 @@ Le - 180 soustrait le "tour" déjà effectué pour repartir de 0
 
 3. Conversion potentiomètre → servo
    
-pythonreturn int(1800 + (valeur / 65535) * (8200 - 1800))
+        return int(1800 + (valeur / 65535) * (8200 - 1800))
 
 Même principe d'interpolation linéaire que le calcul n°1 :
 
@@ -82,7 +77,7 @@ On projette ensuite cette fraction sur la plage du servo [1800 ; 8200]
 
 4. Conversion en tension (volts)
    
-pythontension = valeur * 3.3 / 65535
+        tension = valeur * 3.3 / 65535
 
 Le convertisseur analogique-numérique (ADC) encode la tension sur 16 bits, soit 65535 niveaux max, correspondant à 3.3V (tension max du Raspberry Pi Pico). On fait donc une simple règle de trois :
 
@@ -92,7 +87,7 @@ valeur →  ?  V  =  valeur × 3.3 / 65535
 
 6. La fonction f(x) (version avec formule de droite explicite)
    
-pythony = (65535*0.5/20) + ((65535*2.5/20) - (65535*0.5/20)) / 180 * x
+        y = (65535*0.5/20) + ((65535*2.5/20) - (65535*0.5/20)) / 180 * x
 
 C'est la formule d'une droite : f(x) = f(a) + (f(b) - f(a)) / (b - a) × (x - a)
 
@@ -103,11 +98,9 @@ La formule interpole linéairement entre ces deux points selon l'angle x.
 
 8. Compteur binaire avec 4 LEDs
    
-pythona = bin(a)[2:]
-
-while len(a) < 4:
-
-    a = "0" + a
+        a = bin(a)[2:]
+        while len(a) < 4:
+            a = "0" + a
 
 bin(5) retourne '0b101' → le [2:] supprime le préfixe 0b → '101'
 
