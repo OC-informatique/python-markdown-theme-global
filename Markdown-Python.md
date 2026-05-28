@@ -43,44 +43,10 @@ Pour accéder à ses chiffres un par un il faut faire une conversion en chaîne 
 Principe:
 On transforme le nombre en **chaîne (`str`)**, puis on parcourt chaque caractère.
 
-Exemple:
-```python
-nombre = 12345
-
-for chiffre in str(nombre):
-    print(chiffre)
-
-Résultat:
-Copier le code
-1
-2
-3
-4
-5
-Chaque chiffre est de type str.
-Pour le convertir en entier :
-Copier le code
-chiffre = int(chiffre)
-```
-
 ## Convertir un nombre en binaire et ôter les 2 premiers caractères de la chaîne
 
 On utilise la fonction `bin()` de math et rajoute un argument `[2:]` afin de se débarasser des deux premiers caractères qu'il renvoie. Ainsi, on peut écrire par exemple: `a=bin(12)[2:]` où `a` sera égale à l'écriture binaire de 12 sans l'argument 0b qui le précède abituellement lorsque on utilise la fonction `bin()`.
 Le programe final qui fait ceci, défini en fonction serait donc:
-```python
-from math import *
-
-def transformationEnBinaire(nombre):
-    #on défini a (appelez le comme vous voulez)
-    a = 0
-    #on donne la valeur de a
-    a = bin(nombre)[2:]
-    #on renvoie a à la fin de la fonction
-    return a
-
-#on imprime 12 en binaire
-print(transformationEnBinaire(12))
-```
 
 ## [Retour à la racine](https://my.flowershow.app/@corentinrordorf/python-markdown-theme-global)
 
