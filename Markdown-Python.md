@@ -585,6 +585,213 @@ duty_u16 = (% / 100) × 65535
 ```
 > Exemple : 50% → **32768**
 
+
+
+# Explication du projet — Coffre-Fort à Combinaison
+---
+
+##  Table des matières
+
+1. [Ce que fait le projet](#ce-que-fait-le-projet)
+2. [Les composants utilisés et leur rôle](#les-composants-utilisés-et-leur-rôle)
+3. [Les variables du programme](#les-variables-du-programme)
+4. [Les grandes fonctions](#les-grandes-fonctions)
+5. [Comment fonctionne la boucle principale](#comment-fonctionne-la-boucle-principale)
+6. [Mode validation — appui court](#mode-validation--appui-court)
+7. [Mode reset — appui long](#mode-reset--appui-long)
+8. [L'écran LCD — comment ça marche](#lécran-lcd--comment-ça-marche)
+
+---
+
+## Ce que fait le projet
+
+Le projet est un **coffre-fort électronique interactif**. Le joueur doit tourner trois potentiomètres pour former une combinaison secrète à 3 chiffres (chaque chiffre pouvant valoir 1, 2 ou 3).
+
+**Combinaison par défaut : `1 – 2 – 2`**
+
+### Déroulement d'une partie
+
+1. Le joueur tourne les trois potentiomètres pour régler ses chiffres
+2. L'écran LCD affiche en temps réel la valeur de chaque potentiomètre
+3. Le joueur appuie **brièvement** sur le bouton pour valider son code
+4. Le système vérifie chiffre par chiffre :
+   - ✅ Bon chiffre → LED verte + son aigu
+   - ❌ Mauvais chiffre → LED rouge + son grave
+5. Si les 3 chiffres sont corrects → message de victoire + mélodie
+6. Après **5 erreurs consécutives** → message d'avertissement
+7. Un **appui long (≥ 1 seconde)** permet de reprogrammer le code secret
+
+---
+
+## Les composants utilisés et leur rôle
+
+| Composant | Quantité | Broche(s) | Rôle dans le projet |
+|-----------|----------|-----------|---------------------|
+| Potentiomètre | 3 | GP26, GP27, GP28 | Saisir les 3 chiffres du code (1, 2 ou 3) |
+| LED verte | 3 | GP7, GP18, GP20 | Indique qu'un chiffre est **correct** |
+| LED rouge | 3 | GP6, GP17, GP19 | Indique qu'un chiffre est **incorrect** |
+| Bouton poussoir | 1 | GP8 | Valider le code (court) ou le reprogrammer (long) |
+| Buzzer passif | 1 | GP9 | Retour sonore (son aigu = bon, grave = erreur) |
+| Écran LCD 16×2 | 1 | GP10 à GP15 | Afficher les valeurs et les messages |
+
+### Les potentiomètres
+
+Chaque potentiomètre est branché sur une entrée **ADC** (convertisseur analogique-numérique). En tournant le curseur, la tension lue varie entre 0V et 3.3V. Le programme divise cette plage en 3 zones égales pour obtenir un chiffre discret :
+
+- Position basse → chiffre **1**
+- Position milieu → chiffre **2**  
+- Position haute → chiffre **3**
+
+### Le bouton
+
+Câblé avec une résistance **PULL_UP** interne. Cela signifie que quand personne n'appuie, le pin lit **1**. Quand on appuie, le pin lit **0**. C'est contre-intuitif mais c'est la façon standard de brancher un bouton sur un microcontrôleur.
+
+### Le buzzer passif
+
+Contrairement à un buzzer actif, le buzzer passif a besoin qu'on lui envoie un **signal PWM** (une fréquence variable) pour produire un son. On contrôle :
+- La **fréquence** → change la hauteur du son (aigu ou grave)
+- Le **duty cycle** → change le volume
+
+---
+
+## Les variables du programme
+
+| Variable | Type | Ce qu'elle contient | Exemple |
+|----------|------|---------------------|---------|
+| `combinaison` | liste de 3 entiers | Le code secret à deviner | `[1, 2, 2]` |
+| `tentatives` | entier | Nombre d'erreurs consécutives depuis le dernier succès | `3` |
+| `last_vals` | liste de 3 entiers | Les dernières valeurs lues des potentiomètres | `[2, 1, 3]` |
+| `vals` | liste de 3 entiers | Les valeurs actuelles lues à chaque cycle | `[1, 2, 2]` |
+| `correct` | booléen | Vrai si tous les chiffres sont bons, Faux dès une erreur | `True` |
+| `t0` | entier (ms) | Moment où le bouton a été appuyé (en millisecondes) | `12400` |
+| `duree` | entier (ms) | Durée de l'appui sur le bouton | `800` |
+| `affichage` | chaîne de caractères | Le texte construit progressivement pour l'écran LCD | `"1-2-"` |
+
+### Pourquoi `last_vals` ?
+
+L'écran LCD est lent à rafraîchir et scintille si on l'efface trop souvent. La variable `last_vals` mémorise ce qu'on affichait au cycle précédent. On ne met à jour l'écran **que si une valeur a changé**. C'est une optimisation importante pour un affichage fluide.
+
+### Pourquoi `vals[:]` et pas juste `vals` pour copier ?
+
+En Python, une liste est un **objet**. Si on écrit `last_vals = vals`, les deux variables pointent vers le **même objet en mémoire** — modifier `vals` modifierait aussi `last_vals`. Le `[:]` crée une vraie copie indépendante de la liste.
+
+---
+
+## Les grandes fonctions
+
+### `lire_pot(p)` — Lire un potentiomètre
+
+Cette fonction reçoit un objet ADC (un potentiomètre) et retourne un chiffre entre 1 et 3.
+
+Elle lit la tension sur l'entrée analogique (valeur brute entre 0 et 65535), puis la convertit :
+- 0 à 21844 → retourne **1**
+- 21845 à 43689 → retourne **2**
+- 43690 à 65535 → retourne **3**
+
+C'est la fonction qui traduit un mouvement physique (tourner un potentiomètre) en chiffre utilisable par le reste du programme.
+
+### `beep(f, d)` — Jouer un son
+
+Cette fonction reçoit une **fréquence** (en Hz) et une **durée** (en secondes). Elle active le buzzer à la fréquence demandée pendant la durée, puis le coupe.
+
+Sons utilisés dans le projet :
+| Fréquence | Note approx. | Utilisé pour |
+|-----------|-------------|--------------|
+| 369 Hz | Fa#4 (grave) | Chiffre incorrect |
+| 1479 Hz | Fa#5 (moyen) | Réinitialisation code |
+| 2959 Hz | Fa#6 (aigu) | Chiffre correct / Victoire |
+
+### `reset_leds()` — Éteindre toutes les LEDs
+
+Cette fonction parcourt une liste contenant les 6 objets LED et les éteint toutes. Elle est appelée avant chaque vérification pour repartir d'un état propre.
+
+### Fonctions LCD (`lcd_init`, `lcd_clear`, `lcd_print`)
+
+Ces fonctions gèrent la communication avec l'écran LCD. Elles sont appelées partout dans le programme pour :
+- **`lcd_init()`** : démarrer l'écran au lancement
+- **`lcd_clear()`** : effacer l'écran
+- **`lcd_print(texte)`** : afficher du texte sur la ligne courante
+- **`lcd_command(0xC0)`** : déplacer le curseur sur la **deuxième ligne** de l'écran
+
+---
+
+## Comment fonctionne la boucle principale
+
+Le programme tourne en permanence dans une boucle `while True`. À chaque cycle :
+
+1. **Lire les 3 potentiomètres** → obtenir `vals = [chiffre1, chiffre2, chiffre3]`
+2. **Comparer avec `last_vals`** → si un chiffre a changé, mettre à jour l'écran LCD et sauvegarder les nouvelles valeurs dans `last_vals`
+3. **Vérifier si le bouton est appuyé** → si oui, mesurer la durée d'appui
+4. **Brancher selon la durée** :
+   - Appui court (< 1 seconde) → aller en mode **validation**
+   - Appui long (≥ 1 seconde) → aller en mode **reset**
+5. **Attendre 0.1 seconde** (`time.sleep(0.1)`) et recommencer
+
+---
+
+## Mode validation — appui court
+
+Quand le joueur appuie brièvement sur le bouton, le programme :
+
+1. Éteint toutes les LEDs pour repartir d'un état propre
+2. Crée un **drapeau booléen** `correct = True` (on suppose que c'est bon)
+3. Pour chacun des 3 chiffres (boucle `for i in range(3)`) :
+   - Affiche progressivement le code entré sur le LCD : `"1"` → `"1-2"` → `"1-2-3"`
+   - Compare `vals[i]` avec `combinaison[i]`
+   - Si c'est bon : allume la LED verte, joue un son aigu
+   - Si c'est faux : allume la LED rouge, joue un son grave, et passe `correct = False`
+   - Fait une pause de 0.5s pour que le joueur puisse voir le résultat
+4. Après la vérification des 3 chiffres :
+   - Si `correct` est encore `True` : affiche "Correct !", remet `tentatives` à 0, joue 5 bips aigus
+   - Si `correct` est `False` : incrémente `tentatives`, affiche "Essaye encore" ou "T'abuse non" si 5 erreurs
+
+---
+
+## Mode reset — appui long
+
+Quand le joueur maintient le bouton appuyé plus d'une seconde :
+
+1. La valeur actuelle de chaque potentiomètre (`vals`) devient le **nouveau code secret** → `combinaison = vals[:]`
+2. Le compteur `tentatives` est remis à 0
+3. Toutes les LEDs clignotent 5 fois ensemble avec un bip à chaque fois (feedback visuel clair)
+4. L'écran affiche "Nouveau code :" sur la ligne 1, et le code (ex: `1-3-2`) sur la ligne 2
+
+C'est ce mode qui permet à l'utilisateur de **personnaliser le code** sans reprogrammer le Pico.
+
+---
+
+## L'écran LCD — comment ça marche
+
+L'écran LCD HD44780 (16 caractères × 2 lignes) est piloté en **mode 4 bits** : les données sont envoyées en deux fois (4 bits à la fois) via les broches D4 à D7. Cela économise des broches GPIO par rapport au mode 8 bits.
+
+### Communication avec l'écran
+
+La communication se fait par une série d'étapes :
+1. On indique si on envoie une **commande** (effacer, déplacer curseur…) ou un **caractère** à afficher via le pin RS
+2. On envoie les 4 bits de poids fort, puis les 4 bits de poids faible
+3. À chaque envoi de 4 bits, on envoie une impulsion sur le pin Enable (E) pour valider
+
+### Les commandes importantes
+
+| Commande | Effet |
+|----------|-------|
+| `lcd_command(0x01)` | Effacer l'écran et revenir en haut à gauche |
+| `lcd_command(0xC0)` | Déplacer le curseur au début de la **2e ligne** |
+| `lcd_print("texte")` | Afficher du texte à la position courante du curseur |
+
+### Affichage progressif du code
+
+Lors de la validation, l'affichage se construit progressivement sur la 2e ligne :
+- Après chiffre 1 : `"1"`
+- Après chiffre 2 : `"1-2"`
+- Après chiffre 3 : `"1-2-3"`
+
+Cela donne un effet visuel dynamique et permet au joueur de suivre la vérification en cours.
+
+---
+
+*Projet réalisé dans le cadre du cours d'informatique — 2025–26*
+
 ## [Retour à la racine](https://my.flowershow.app/@corentinrordorf/python-markdown-theme-global)
 
 # W
