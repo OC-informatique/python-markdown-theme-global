@@ -65,6 +65,11 @@ setServoCycle(position) — Variante du même concept : envoie le servo à une p
 
 aller_a(position) — Autre fonction personnalisée : déplace le servo à une position donnée puis attend 1 seconde.
 
+Si on fait une fonction dans laquelle on entre un angle pour faire bouger le moteur
+    si angle = 180 : 65535*2.5/20 
+    si angle=0 : duty doit valoir 65535*0.5/20
+    rappel pour une droite f(x)=f(a)+(f(b)-f(a))/(b-a)*(x-a)
+
    ##Bouton
 
 button — Variable représentant un bouton connecté à une broche.
