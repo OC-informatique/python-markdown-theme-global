@@ -467,58 +467,87 @@ Pas de résistance avec LED
 → destruction.
 
 
-## LEDs & CALCUL DE RÉSISTANCE
-POINTS CLÉS À RETENIR
-• R = (V_gen - V_LED) / I_LED — toujours calculer avant de brancher
-• Anode (longue) vers GPIO, Cathode (courte) vers GND
-• Prendre une résistance SUPÉRIEURE ou ÉGALE au calcul (jamais inférieure)
-• Résistance recommandée en classe : 220 Ω
+## LEDs & Calcul de résistance
 
- ## LE BOUTON POUSSOIR
+> **Points clés**
+> - `R = (V_gen - V_LED) / I_LED` — toujours calculer avant de brancher
+> - Anode (patte **longue**) → GPIO, Cathode (patte **courte**) → GND
+> - Prendre une résistance **supérieure ou égale** au calcul (jamais inférieure)
+> - Résistance recommandée en classe : **220 Ω**
+
+---
+
+## Le bouton poussoir
+
+```python
 btn = Pin(X, Pin.IN, Pin.PULL_UP)
-POINTS CLÉS À RETENIR
-• PULL_UP activé → bouton appuyé = 0 (contre-intuitif mais standard)
-• Détecter le FRONT (changement d'état) pour compter les clics précisément
-• Utiliser ticks_ms() et ticks_diff() pour mesurer la durée d'un appui
-• sleep(0.02) dans la boucle = anti-rebond basique
+```
 
-## POTENTIOMÈTRE & ADC
-Broche 1 (Vcc) → 3.3V
-• Broche 2 (Output/curseur) → Pin ADC du Pico (GP26, 27 ou 28)
-• Broche 3 (GND) → GND 
+> **Points clés**
+> - `PULL_UP` activé → bouton appuyé = **0** (contre-intuitif mais standard)
+> - Détecter le **front** (changement d'état) pour compter les clics précisément
+> - Utiliser `ticks_ms()` et `ticks_diff()` pour mesurer la durée d'un appui
+> - `sleep(0.02)` dans la boucle = anti-rebond basique
 
- POINTS CLÉS À RETENIR
-• ADC disponible sur GP26 (ADC0), GP27 (ADC1), GP28 (ADC2) uniquement
-• read_u16() → valeur entière 0 à 65535 (résolution 16 bits)
-• Tension réelle = valeur × 3.3 / 65535
-• Pot câblé : 3.3V → broche 1, GP26 → broche 2 (curseur), GND → broche 3
+---
 
-## PWM — MODULATION DE LARGEUR D'IMPULSION
-POINTS CLÉS À RETENIR
-• duty_u16() prend des valeurs de 0 (0%) à 65535 (100%)
-• La fréquence PWM typique pour une LED : 100 Hz à 10 kHz
-• Pour un servo : freq = 50 Hz (période 20ms) — voir section suivante
-• Pour un buzzer passif : changer la fréquence change la note musicale
+## Potentiomètre & ADC
 
-## MOTEUR SERVO
-Formule — convertir ms → duty_u16
-     duty_u16 = (duree_ms / 20) x 65535
-Câblage du servo
-• Fil orange (signal) → GPIO choisi (ex: GP0)
-• Fil rouge (+5V) → VBUS (pin 40)
-• Fil noir/marron (GND) → GND
+**Câblage :**
+- Broche 1 (Vcc) → **3.3V**
+- Broche 2 (curseur) → **GP26, GP27 ou GP28**
+- Broche 3 (GND) → **GND**
 
-pwm = PWM(Pin(0)) # servo sur GP0
-pwm.freq(50) # OBLIGATOIRE : 50 Hz pour servo
+> **Points clés**
+> - ADC disponible sur **GP26** (ADC0), **GP27** (ADC1), **GP28** (ADC2) uniquement
+> - `read_u16()` → valeur entière **0 à 65535** (résolution 16 bits)
+> - Tension réelle = `valeur × 3.3 / 65535`
 
- POINTS CLÉS À RETENIR
-• Servo : toujours freq(50) — 50 Hz, période 20ms
-• 0° ≈ duty 1638 | 90° ≈ duty 4915 | 180° ≈ duty 8191
-• Formule : duty = (ms / 20) × 65535
-• Fil rouge servo → VBUS (5V), PAS sur 3.3V !
-• Étalonnage : les valeurs exactes dépendent du servo distribué
+---
 
-## RÉSUMÉ
+## PWM — Modulation de largeur d'impulsion
+
+> **Points clés**
+> - `duty_u16()` prend des valeurs de **0** (0%) à **65535** (100%)
+> - Fréquence PWM typique pour une LED : 100 Hz à 10 kHz
+> - Pour un servo : `freq = 50 Hz` (période 20 ms)
+> - Pour un buzzer passif : changer la fréquence change la **note musicale**
+
+---
+
+## Moteur servo
+
+**Formule — convertir ms → duty_u16 :**
+```
+duty_u16 = (duree_ms / 20) × 65535
+```
+
+| Angle | Durée impulsion | duty_u16 approx. |
+|-------|----------------|-----------------|
+| 0°    | 0.5 ms         | ≈ 1638          |
+| 90°   | 1.5 ms         | ≈ 4915          |
+| 180°  | 2.5 ms         | ≈ 8191          |
+
+**Câblage :**
+- Fil **orange** (signal) → GPIO choisi (ex: GP0)
+- Fil **rouge** (+5V) → VBUS (pin 40)
+- Fil **noir/marron** (GND) → GND
+
+```python
+pwm = PWM(Pin(0))   # servo sur GP0
+pwm.freq(50)        # OBLIGATOIRE : 50 Hz pour servo
+```
+
+> **Points clés**
+> - Toujours `freq(50)` — 50 Hz, période 20 ms
+> - 0° ≈ 1638 | 90° ≈ 4915 | 180° ≈ 8191
+> - Fil rouge → **VBUS (5V)**, PAS sur 3.3V !
+> - Les valeurs exactes dépendent du servo distribué
+
+---
+
+## Résumé
+
 | Composant | Import | Init | Lire / Écrire |
 |---|---|---|---|
 | **LED (output)** | `from machine import Pin` | `Pin(15, Pin.OUT)` | `led.value(1/0)` |
@@ -528,22 +557,33 @@ pwm.freq(50) # OBLIGATOIRE : 50 Hz pour servo
 | **Servo (PWM)** | `from machine import PWM, Pin` | `PWM(Pin(0)); .freq(50)` | `pwm.duty_u16(1638–8191)` |
 | **Temps** | `from time import sleep, ticks_ms` | — | `sleep(s)` / `ticks_ms()` |
 
-## FORMULES ESSENTIELLES
-# Résistance LED
+---
+
+## Formules essentielles
+
+**Résistance LED**
+```
 R = (V_gen − V_LED) / I_LED
-Exemple : 3.3V gen, LED rouge 1.7V, 2mA → R = (3.3−1.7)/0.002 = 800 Ω
+```
+> Exemple : 3.3V, LED rouge 1.7V, 2mA → R = (3.3−1.7)/0.002 = **800 Ω**
 
-# Tension depuis ADC
+**Tension depuis ADC**
+```
 V = read_u16() × 3.3 / 65535
-Exemple : read_u16() = 32768 → V ≈ 1.65V
+```
+> Exemple : read_u16() = 32768 → V ≈ **1.65V**
 
-# Angle → duty servo
+**Angle → duty servo**
+```
 duty = (0.5 + angle/180 × 2.0) / 20 × 65535
-Exemple : 90° → (0.5+1.0)/20×65535 ≈ 4915
+```
+> Exemple : 90° → (0.5+1.0)/20×65535 ≈ **4915**
 
-# Duty cycle %
+**Duty cycle %**
+```
 duty_u16 = (% / 100) × 65535
-Exemple : 50% → 32768
+```
+> Exemple : 50% → **32768**
 
 ## [Retour à la racine](https://my.flowershow.app/@corentinrordorf/python-markdown-theme-global)
 
