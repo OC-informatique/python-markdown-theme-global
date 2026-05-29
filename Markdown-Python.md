@@ -108,6 +108,17 @@ La boucle while complète avec des zéros à gauche pour toujours avoir 4 chiffr
 
 Ensuite on lit chaque caractère et on allume la LED correspondante si c'est un 1
 
+Formule — convertir ms → duty_u16
+     duty_u16 = (duree_ms / 20) x 65535
+
+Câblage du servo: 
+• Fil orange (signal) → GPIO choisi (ex: GP0)
+• Fil rouge (+5V) → VBUS (pin 40)
+• Fil noir/marron (GND) → GND
+
+pwm = PWM(Pin(0)) # servo sur GP0
+pwm.freq(50) # OBLIGATOIRE : 50 Hz pour servo
+
 ## Les chaînes de caractère en python
 
 En Python, une chaîne de caractères (ou *string*) est une suite de caractères utilisée pour représenter du texte. Elle est définie à l’aide de guillemets simples (`'`), doubles (`"`) ou triples (`'''` ou `"""`) pour les textes sur plusieurs lignes. Les chaînes sont **immuables**, ce qui signifie qu’on ne peut pas modifier un caractère directement une fois la chaîne créée. Python offre de nombreuses opérations sur les chaînes, comme la concaténation avec `+`, la répétition avec `*`, l’accès à un caractère par son indice, ou encore des méthodes très pratiques comme `upper()`, `lower()`, `split()` et `replace()`. Les chaînes de caractères sont très utilisées pour la gestion des données textuelles, l’affichage de messages et la manipulation d’entrées utilisateur.
@@ -456,6 +467,83 @@ Pas de résistance avec LED
 → destruction.
 
 
+## LEDs & CALCUL DE RÉSISTANCE
+POINTS CLÉS À RETENIR
+• R = (V_gen - V_LED) / I_LED — toujours calculer avant de brancher
+• Anode (longue) vers GPIO, Cathode (courte) vers GND
+• Prendre une résistance SUPÉRIEURE ou ÉGALE au calcul (jamais inférieure)
+• Résistance recommandée en classe : 220 Ω
+
+ ## LE BOUTON POUSSOIR
+btn = Pin(X, Pin.IN, Pin.PULL_UP)
+POINTS CLÉS À RETENIR
+• PULL_UP activé → bouton appuyé = 0 (contre-intuitif mais standard)
+• Détecter le FRONT (changement d'état) pour compter les clics précisément
+• Utiliser ticks_ms() et ticks_diff() pour mesurer la durée d'un appui
+• sleep(0.02) dans la boucle = anti-rebond basique
+
+## POTENTIOMÈTRE & ADC
+Broche 1 (Vcc) → 3.3V
+• Broche 2 (Output/curseur) → Pin ADC du Pico (GP26, 27 ou 28)
+• Broche 3 (GND) → GND 
+
+ POINTS CLÉS À RETENIR
+• ADC disponible sur GP26 (ADC0), GP27 (ADC1), GP28 (ADC2) uniquement
+• read_u16() → valeur entière 0 à 65535 (résolution 16 bits)
+• Tension réelle = valeur × 3.3 / 65535
+• Pot câblé : 3.3V → broche 1, GP26 → broche 2 (curseur), GND → broche 3
+
+## PWM — MODULATION DE LARGEUR D'IMPULSION
+POINTS CLÉS À RETENIR
+• duty_u16() prend des valeurs de 0 (0%) à 65535 (100%)
+• La fréquence PWM typique pour une LED : 100 Hz à 10 kHz
+• Pour un servo : freq = 50 Hz (période 20ms) — voir section suivante
+• Pour un buzzer passif : changer la fréquence change la note musicale
+
+## MOTEUR SERVO
+Formule — convertir ms → duty_u16
+     duty_u16 = (duree_ms / 20) x 65535
+Câblage du servo
+• Fil orange (signal) → GPIO choisi (ex: GP0)
+• Fil rouge (+5V) → VBUS (pin 40)
+• Fil noir/marron (GND) → GND
+
+pwm = PWM(Pin(0)) # servo sur GP0
+pwm.freq(50) # OBLIGATOIRE : 50 Hz pour servo
+
+ POINTS CLÉS À RETENIR
+• Servo : toujours freq(50) — 50 Hz, période 20ms
+• 0° ≈ duty 1638 | 90° ≈ duty 4915 | 180° ≈ duty 8191
+• Formule : duty = (ms / 20) × 65535
+• Fil rouge servo → VBUS (5V), PAS sur 3.3V !
+• Étalonnage : les valeurs exactes dépendent du servo distribué
+
+## RÉSUMÉ
+| Composant | Import | Init | Lire / Écrire |
+|---|---|---|---|
+| **LED (output)** | `from machine import Pin` | `Pin(15, Pin.OUT)` | `led.value(1/0)` |
+| **Bouton (input)** | `from machine import Pin` | `Pin(13, Pin.IN, Pin.PULL_UP)` | `btn.value()` → 0 ou 1 |
+| **Potentiomètre (ADC)** | `from machine import ADC, Pin` | `ADC(Pin(26))` | `adc.read_u16()` → 0–65535 |
+| **LED dimmer (PWM)** | `from machine import PWM, Pin` | `PWM(Pin(15)); .freq(1000)` | `pwm.duty_u16(0–65535)` |
+| **Servo (PWM)** | `from machine import PWM, Pin` | `PWM(Pin(0)); .freq(50)` | `pwm.duty_u16(1638–8191)` |
+| **Temps** | `from time import sleep, ticks_ms` | — | `sleep(s)` / `ticks_ms()` |
+
+## FORMULES ESSENTIELLES
+# Résistance LED
+R = (V_gen − V_LED) / I_LED
+Exemple : 3.3V gen, LED rouge 1.7V, 2mA → R = (3.3−1.7)/0.002 = 800 Ω
+
+# Tension depuis ADC
+V = read_u16() × 3.3 / 65535
+Exemple : read_u16() = 32768 → V ≈ 1.65V
+
+# Angle → duty servo
+duty = (0.5 + angle/180 × 2.0) / 20 × 65535
+Exemple : 90° → (0.5+1.0)/20×65535 ≈ 4915
+
+# Duty cycle %
+duty_u16 = (% / 100) × 65535
+Exemple : 50% → 32768
 
 ## [Retour à la racine](https://my.flowershow.app/@corentinrordorf/python-markdown-theme-global)
 
